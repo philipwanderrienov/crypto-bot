@@ -48,6 +48,9 @@ def main() -> None:
         price_cols[1].metric("High", f"{snapshot.high_price:.4f}" if snapshot.high_price is not None else "-")
         price_cols[2].metric("Low", f"{snapshot.low_price:.4f}" if snapshot.low_price is not None else "-")
         price_cols[3].metric("Close", f"{snapshot.close_price:.4f}" if snapshot.close_price is not None else "-")
+
+        if market_status.get("last_error"):
+            st.error(f"Market data error: {market_status['last_error']}")
     else:
         st.info("Waiting for market snapshot...")
 

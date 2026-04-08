@@ -63,6 +63,12 @@ class MarketDataService:
             self._snapshot.last_error = error
             self._snapshot.status = "running" if connected else "degraded"
 
+    def set_error(self, error: Optional[str]) -> None:
+        with self._lock:
+            self._snapshot.last_error = error
+            if error:
+                self._snapshot.status = "error"
+
     def get_latest_snapshot(self) -> RealtimeMarketSnapshot:
         with self._lock:
             return self._snapshot

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from datetime import datetime, timezone
 from time import sleep
-from typing import Optional
 
 from app.config.logging import configure_logging
 from app.config.settings import get_settings
@@ -37,22 +35,19 @@ class TradingEngine:
             return
 
         self._started = True
-        self.market_data_service.set_websocket_status(True, None)
+        self._refresh_market_snapshot()
         self.websocket_client.start(self._handle_candle)
-        self._start_polling_loop()
 
-    def _start_polling_loop(self) -> None:
-        candle = MarketCandle(
-            symbol=self.settings.default_symbol,
-            timeframe=self.settings.default_timeframe,
-            open_time=datetime.now(timezone.utc),
-            open_price=100.0,
-            high_price=101.0,
-            low_price=99.0,
-            close_price=100.5,
-            volume=1.0,
-        )
-        self.market_data_service.update_snapshot_from_polling(candle)
+    def _refresh_market_snapshot(self) -> None:
+        try:
+            candle = self.exchange_client.get_latest_candle(
+                symbol=self.settings.default_symbol,
+                timeframe=self.settings.default_timeframe,
+            )
+            self.market_data_service.update_snapshot_from_polling(candle)
+            self.market_data_service.set_error(None)
+        except Exception as exc:
+            self.market_data_service.set_error(str(exc))
 
     def build_state(self, is_running: bool, last_error: str | None = None) -> BotState:
         return BotState(
@@ -78,7 +73,8 @@ class TradingEngine:
         self.start_realtime_pipeline()
         try:
             while True:
-                sleep(1)
+                self._refresh_market_snapshot()
+                sleep(5)
         except KeyboardInterrupt:
             self.stop()
 
