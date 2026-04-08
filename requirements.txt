@@ -1,0 +1,17 @@
+streamlit
+pandas
+numpy
+pybit
+sqlalchemy
+psycopg2-binary
+alembic
+python-dotenv
+pydantic
+pydantic-settings
+requests
+httpx
+websockets
+pytest
+pytest-asyncio
+pytest-cov
+loguru
