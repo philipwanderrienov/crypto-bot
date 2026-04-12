@@ -9,6 +9,37 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from app.bot.runner import BotRunner
 from app.config.settings import get_settings
+from app.dashboard.pages.orders import render_orders
+from app.dashboard.pages.overview import render_overview
+from app.dashboard.pages.positions import render_positions
+from app.dashboard.pages.settings import render_settings
+from app.dashboard.pages.trades import render_trades
+
+
+def render_dashboard_navigation() -> str:
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio(
+        "Select a page",
+        ["Overview", "Orders", "Positions", "Trades", "Settings"],
+        index=0,
+        key="dashboard_page",
+    )
+    st.sidebar.divider()
+    st.sidebar.caption("Use the menu to switch between dashboard pages.")
+    return page
+
+
+def render_selected_page(page: str) -> None:
+    if page == "Orders":
+        render_orders()
+    elif page == "Positions":
+        render_positions()
+    elif page == "Trades":
+        render_trades()
+    elif page == "Settings":
+        render_settings()
+    else:
+        render_overview()
 
 
 def main() -> None:
@@ -21,8 +52,17 @@ def main() -> None:
 
     st.set_page_config(page_title=settings.app_name, layout="wide")
     st.title("Crypto Bot Dashboard")
-    st.subheader("Realtime Overview")
 
+    st.sidebar.subheader("Core Status")
+    st.sidebar.metric("Bot Name", state.bot_name)
+    st.sidebar.metric("Running", str(state.is_running))
+    st.sidebar.metric("Symbol", state.current_symbol or "-")
+    st.sidebar.metric("Timeframe", state.current_timeframe or "-")
+
+    page = render_dashboard_navigation()
+
+    st.divider()
+    st.subheader("Realtime Overview")
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Bot Name", state.bot_name)
     col2.metric("Running", str(state.is_running))
@@ -66,6 +106,9 @@ def main() -> None:
         st.error(state.last_error)
     else:
         st.success("Realtime pipeline running.")
+
+    st.divider()
+    render_selected_page(page)
 
 
 if __name__ == "__main__":
