@@ -11,7 +11,7 @@ export default function App() {
     <div className="app-shell">
       <Sidebar currentView={view} onSelectView={setView} />
       <main className="app-content">
-        <OverviewPage />
+        {view === "overview" ? <OverviewPage /> : <OverviewPage />}
       </main>
 
       <nav className="mobile-nav" aria-label="Primary mobile navigation">

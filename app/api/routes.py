@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from app.api.health import health_check
 from app.api.models import (
-    ApiErrorResponse,
     BotStateResponse,
     HealthResponse,
     MarketSnapshotResponse,
@@ -18,21 +16,19 @@ from app.api.models import (
     TradeResponse,
 )
 from app.bot.engine import TradingEngine
-from app.config.settings import AppSettings, get_settings
+from app.config.settings import get_settings
 from app.domain.models.bot_state import BotState
 from app.domain.models.market import RealtimeMarketSnapshot
 from app.domain.models.order import Order
 from app.domain.models.position import Position
-from app.infrastructure.database.repositories import PostgresRepositoryExtras, SqlAlchemyBotRepository
+from app.infrastructure.database.repositories import SqlAlchemyBotRepository
 from app.services.bot_control_service import BotControlService
-from app.services.portfolio_service import PortfolioService
 
 router = APIRouter()
 
 _settings = get_settings()
 _repository = SqlAlchemyBotRepository()
 _bot_control = BotControlService(repository=_repository, bot_name=_settings.app_name)
-_portfolio = PortfolioService()
 
 
 def _build_engine() -> TradingEngine:
@@ -181,6 +177,3 @@ def stop_bot() -> dict[str, Any]:
     return _bot_control.stop()
 
 
-@router.exception_handler(Exception)
-def _handle_unexpected_error(_: Any, exc: Exception) -> HTTPException:
-    raise HTTPException(status_code=500, detail={"detail": str(exc)})
